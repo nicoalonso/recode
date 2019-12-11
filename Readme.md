@@ -31,3 +31,12 @@ Darle permisos de ejecución
 chmod +x /usr/local/bin/recode
 ```
 
+## Ejecución
+
+Simplemente muevete a la carpeta donde se localizan los videos y ejecuta
+
+```bash
+recode
+```
+
+Y a disfrutar.
