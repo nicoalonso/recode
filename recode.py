@@ -32,7 +32,7 @@ class Recode:
 
         self.total = len(self.videos)
         print('')
-        print('[+] Total de videos', self.total)
+        print('[+] Total videos', self.total)
 
     # Transformar
     def convert(self, video):
