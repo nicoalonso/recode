@@ -43,7 +43,15 @@ recode carpeta
 
 Donde `carpeta` es la ruta donde se localizan los vídeos a convertir.
 
-Modificadores:
+Ejemplo:
+
+```bash
+recode .
+```
+
+Para buscar en la carpeta actual.
+
+#### Modificadores:
 
 * `-m, --move`: Mueve los vídeos antiguos a una carpeta de copia de seguridad o recuperación. Por defecto los vídeos nuevos y antiguos se almacenan en la misma carpeta.
 * `-b BACKUP, --backup BACKUP`:  Indica el nombre de la carpeta de recuperación, por defecto "`backup`".
