@@ -149,9 +149,9 @@ class Recode:
     def resumen(self):
         # Mostrar resumen
         msgs = [
-            'Total videos: ' + self.total,
-            'Total omitidos' + self.omitidos,
-            'Total convertidos' + len(self.success)
+            'Total videos:      %d' % self.total,
+            'Total omitidos:    %d' % self.omitidos,
+            'Total convertidos: %d' % len(self.success)
         ]
         self.mensaje('+', msgs)
 
