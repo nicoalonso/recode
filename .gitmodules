@@ -1,0 +1,3 @@
+[submodule "msgterm.git"]
+	path = msgterm
+	url = git@github.com:nicoalonso/msgterm.git

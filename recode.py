@@ -5,11 +5,24 @@ import sys
 import subprocess
 from argparse import ArgumentParser
 
-# Clase
-class Recode:
+from msgterm import MsgTerm
 
-    # Constructor
-    def __init__(self, args):
+
+class Recode:
+    '''Recode
+    
+    Recode movies
+
+    Attributes:
+        total {number}: number of converted movies
+        omitidos {number}: number of skip movies
+        posicion {number}: number of current movie
+        videos {list}: list of movies to convert
+        success {list}: list of successfully converted movies
+        current_folder {string}: current folder
+    '''
+
+    def __init__(self):
         # Inicializar
         self.total = 0
         self.omitidos = 0
@@ -17,28 +30,19 @@ class Recode:
         self.videos = []
         self.success = []
         self.current_folder = os.getcwd()
-        # parse arguments
+        # actions
         self.arguments()
         self.header()
 
-    # Mostrar mensaje en pantalla
-    def mensaje(self, tipo, *args):
-        tipo = '[%s]' % tipo
-        print('')
-        if len(args) == 1 and (isinstance(args[0], list) or isinstance(args[0], tuple)):
-            for item in args[0]:
-                print(tipo, item)
-        else:
-            print(tipo, *args)
-        print('')
 
-    # Mostrar encabezado en pantalla
     def header(self):
+        '''Show header'''
         msgs = ['', 'Recode :: Recodificar videos', '', '          (ffmpeg)', '']
-        self.mensaje(' ', msgs)
+        MsgTerm.success(msgs, par=True, label='#', bold=True)
 
-    # Definir los argumentos por linea de comandos
+
     def arguments(self):
+        '''Parse input arguments'''
         parser = ArgumentParser()
         parser.add_argument('carpeta', default=".", help="Carpeta donde escanear videos")
         parser.add_argument('-m', '--move', action="store_true", help="Mover los antiguos videos a una carpeta de historización")
@@ -48,8 +52,9 @@ class Recode:
         self.args = parser.parse_args()
         self.get_folder()
 
-    # Obtener la carpeta de busqueda
+
     def get_folder(self):
+        '''Get search folder'''
         folder = self.args.carpeta
         if not folder.startswith('/'):  # Ruta relativa
             if self.args.carpeta == '.':
@@ -64,34 +69,42 @@ class Recode:
         self.args.carpeta = folder
         return folder
 
-    # Recuperar el listado de ficheros
+
     def get_files(self):
+        '''Search and store movies'''
         msgs = [
             'Buscar vídeos con formato: ' + self.args.search,
             'En la carpeta: ' + self.args.carpeta
         ]
-        self.mensaje('+', msgs)
+        MsgTerm.info(msgs, nl=True)
+        extension = '.%s' % self.args.search
 
         for r, d, f in os.walk('.'):
             if r == '.':  # Deshabilitar modo recursivo
                 for file in f:
-                    if file.endswith('.avi'):
+                    if file.endswith(extension):
                         self.videos.append( file )
-                        print(' > ', file)
+                        MsgTerm.text(file, label='>')
 
         self.total = len(self.videos)
-        self.mensaje('+', 'Total videos encontrados: ', self.total)
+        MsgTerm.info('Total videos encontrados: %d' % self.total)
 
-    # Create folder backup
+
     def create_folder_backup(self):
+        '''Create folder backup'''
         self.backup_folder = os.path.join(self.args.carpeta, self.args.backup)
         if not os.path.isdir(self.backup_folder):
-            self.mensaje('+', ['Create backup folder:', self.backup_folder])
+            MsgTerm.info('Crear carpeta de respaldo: %s' % self.backup_folder)
             os.mkdir( self.backup_folder )
 
-    # Transformar
+
     def convert(self, video):
-        self.mensaje('+', 'Codificar vídeo:', video)
+        '''Convert movie
+        
+        Arguments:
+            video {string}: movie filename
+        '''
+        MsgTerm.info('Codificar vídeo %s' % video)
         parts = video.split('.')
         parts.pop()
         parts.append(self.args.format)
@@ -100,7 +113,7 @@ class Recode:
         # Verificar si el video en mkv ya existe en el directorio
         if os.path.isfile(new_video):
             self.omitidos += 1
-            self.mensaje('!', 'El vídeo ya existe, omitir')
+            MsgTerm.alert('El vídeo ya existe, omitir')
         else:
             # Convertir video
             self.success.append( new_video )
@@ -109,27 +122,29 @@ class Recode:
 
             # check ffmpeg return code
             if p.returncode != 0:
-                self.mensaje('!', 'Error en ffmpeg')
+                MsgTerm.fatal('ffmpeg devolvio un error de error')
                 sys.exit(1)
             # Mover el video a la carpeta de backup
             elif self.args.move:
                 old_path = os.path.join(self.args.carpeta, video)
                 new_path = os.path.join(self.backup_folder, video)
-                self.mensaje('+', ['Mover vídeo a la carpeta backup', new_path])
+                MsgTerm.info('Mover vídeo a la carpeta backup %s' % new_path)
 
                 if not os.path.isfile(new_path):
                     os.rename(old_path, new_path)
                 else:
-                    self.mensaje('!', ['Error en backup el fichero ya existe', new_path, 'Se omite'])
+                    MsgTerm.error(['Error al realizar el backup el fichero ya existe', new_path, 'Se omite'])
 
-    # Ejecutar
+
     def run(self):
+        '''Ejecutar'''
+
         # Cambiar de carpeta
         os.chdir(self.args.carpeta)
         self.get_files()
 
         if self.total == 0:
-            self.mensaje('!', 'Sin videos que codificar')
+            MsgTerm.alert('Sin videos que codificar')
             os.chdir(self.current_folder)
             sys.exit(1)
         else:
@@ -138,28 +153,28 @@ class Recode:
                 self.create_folder_backup()
             for movie in self.videos:
                 self.posicion += 1
-                self.mensaje('-', 'Video %d de %d' % (self.posicion, self.total))
+                MsgTerm.success('Video %d de %d' % (self.posicion, self.total))
                 self.convert( movie )
             self.resumen()
 
         # Volver a la carpeta inicial
         os.chdir(self.current_folder)
 
-    # Mostrar un resumen al finalizar
+
     def resumen(self):
-        # Mostrar resumen
+        '''Mostrar un resumen al finalizar'''
         msgs = [
             'Total videos:      %d' % self.total,
             'Total omitidos:    %d' % self.omitidos,
             'Total convertidos: %d' % len(self.success)
         ]
-        self.mensaje('+', msgs)
+        MsgTerm.success(msgs)
 
-        print('[-] Listado de videos convertidos:')
+        MsgTerm.text('Listado de videos convertidos:', label='-')
         for v in self.success:
-            print(' >> ', v)
+            MsgTerm.text(v, label='>>')
 
-        self.mensaje('+', 'Finalizado')
+        MsgTerm.info('Finalizado')
 
 
 if __name__ == '__main__':
