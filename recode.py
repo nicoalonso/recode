@@ -76,7 +76,7 @@ class Recode:
             'Buscar vídeos con formato: ' + self.args.search,
             'En la carpeta: ' + self.args.carpeta
         ]
-        MsgTerm.info(msgs, nl=True)
+        MsgTerm.info(msgs, par=True)
         extension = '.%s' % self.args.search
 
         for r, d, f in os.walk('.'):
@@ -84,17 +84,17 @@ class Recode:
                 for file in f:
                     if file.endswith(extension):
                         self.videos.append( file )
-                        MsgTerm.text(file, label='>')
+                        MsgTerm.message(file, label='>', type=MsgTerm.HELP)
 
         self.total = len(self.videos)
-        MsgTerm.info('Total videos encontrados: %d' % self.total)
+        MsgTerm.info('Total videos encontrados: %d' % self.total, hr=True)
 
 
     def create_folder_backup(self):
         '''Create folder backup'''
         self.backup_folder = os.path.join(self.args.carpeta, self.args.backup)
         if not os.path.isdir(self.backup_folder):
-            MsgTerm.info('Crear carpeta de respaldo: %s' % self.backup_folder)
+            MsgTerm.info('Crear carpeta de respaldo: %s' % self.backup_folder, nl=True)
             os.mkdir( self.backup_folder )
 
 
@@ -104,7 +104,7 @@ class Recode:
         Arguments:
             video {string}: movie filename
         '''
-        MsgTerm.info('Codificar vídeo %s' % video)
+        MsgTerm.info('Codificar vídeo %s' % video, nl=True)
         parts = video.split('.')
         parts.pop()
         parts.append(self.args.format)
@@ -144,7 +144,7 @@ class Recode:
         self.get_files()
 
         if self.total == 0:
-            MsgTerm.alert('Sin videos que codificar')
+            MsgTerm.alert('Sin videos que codificar', par=True)
             os.chdir(self.current_folder)
             sys.exit(1)
         else:
@@ -153,7 +153,7 @@ class Recode:
                 self.create_folder_backup()
             for movie in self.videos:
                 self.posicion += 1
-                MsgTerm.success('Video %d de %d' % (self.posicion, self.total))
+                MsgTerm.success('Video %d de %d' % (self.posicion, self.total), par=True)
                 self.convert( movie )
             self.resumen()
 
@@ -178,5 +178,5 @@ class Recode:
 
 
 if __name__ == '__main__':
-    code = Recode(sys.argv)
+    code = Recode()
     code.run()
