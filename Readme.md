@@ -19,10 +19,12 @@ sudo apt install ffmpeg
 
 ## Instalación
 
-Copia el script a la siguiente ruta
+Para distribuciones basadas en debian.
+
+Crea un enlace simbólico de la siguiente manera
 
 ```bash
-copy recode.py /usr/local/bin/recode
+ln -s recode.py /usr/local/bin/recode
 ```
 
 Darle permisos de ejecución
